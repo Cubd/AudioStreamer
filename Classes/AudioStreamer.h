@@ -29,11 +29,15 @@
 #endif
 #else
 #import <Cocoa/Cocoa.h>
-#endif TARGET_OS_IPHONE			
+#endif// TARGET_OS_IPHONE			
 
 #import <Foundation/Foundation.h>
 #include <pthread.h>
 #include <AudioToolbox/AudioToolbox.h>
+
+
+#define USE_PREBUFFER 1
+
 
 #define LOG_QUEUED_BUFFERS 0
 
@@ -107,7 +111,8 @@ typedef enum
 	AS_AUDIO_QUEUE_FLUSH_FAILED,
 	AS_AUDIO_STREAMER_FAILED,
 	AS_GET_AUDIO_TIME_FAILED,
-	AS_AUDIO_BUFFER_TOO_SMALL
+	AS_AUDIO_BUFFER_TOO_SMALL,
+    AS_AUDIO_MEMORY_ALLOC_FAILED,
 } AudioStreamerErrorCode;
 
 extern NSString * const ASStatusChangedNotification;
@@ -207,6 +212,7 @@ extern NSString * const ASUpdateMetadataNotification;
 @property (readonly) BOOL vbr;
 
 - (id)initWithURL:(NSURL *)aURL;
+//- (id)initWithURL:(NSURL *)aURL encryption:(EncryptionMethod)method crc32:(uLong)crc32;
 - (void)start;
 - (void)stop;
 - (void)pause;

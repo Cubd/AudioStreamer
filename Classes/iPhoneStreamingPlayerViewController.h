@@ -35,9 +35,15 @@
 	NSString *currentImageName;
 }
 
+@property (retain) NSString* currentArtist;
+@property (retain) NSString* currentTitle;
+
 - (IBAction)buttonPressed:(id)sender;
 - (void)spinButton;
-- (void)updateProgress:(NSTimer *)aNotification;
+- (void)forceUIUpdate;
+- (void)createTimers:(BOOL)create;
+- (void)playbackStateChanged:(NSNotification *)aNotification;
+- (void)updateProgress:(NSTimer *)updatedTimer;
 - (IBAction)sliderMoved:(UISlider *)aSlider;
 - (void)destroyStreamer;
 - (void)createStreamer;
