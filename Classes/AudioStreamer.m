@@ -114,11 +114,10 @@ void MyAudioSessionInterruptionListener(void *inClientData, UInt32 inInterruptio
 void audioRouteChangeListenerCallback (void *inUserData, AudioSessionPropertyID inPropertyID, UInt32                 inPropertyValueSize, const void *inPropertyValue);
 
 void audioRouteChangeListenerCallback( void *inUserData, AudioSessionPropertyID inPropertyID, UInt32                 inPropertyValueSize, const void *inPropertyValue) {
-	iPhoneStreamingPlayerAppDelegate *appDelegate = (iPhoneStreamingPlayerAppDelegate *)[[UIApplication sharedApplication] delegate];
     if (inPropertyID != kAudioSessionProperty_AudioRouteChange)
         return;
 	
-    if (appDelegate.streamer != nil && !appDelegate.streamer.isPlaying) {
+    if (__streamer != nil && !__streamer.isPlaying) {
         return;
     } else {
         CFDictionaryRef routeChangeDictionary = inPropertyValue;
@@ -128,7 +127,7 @@ void audioRouteChangeListenerCallback( void *inUserData, AudioSessionPropertyID 
         CFNumberGetValue (routeChangeReasonRef, kCFNumberSInt32Type, &routeChangeReason);
 		
         if (routeChangeReason == kAudioSessionRouteChangeReason_OldDeviceUnavailable) {
-            [appDelegate.streamer stop];
+            [__streamer stop];
         }
     }
 }
@@ -519,6 +518,14 @@ void ASReadStreamCallBack
 	}
 }
 
+- (AudioStreamerState)state
+{
+    @synchronized(self)
+    {
+        return state;
+    }
+}
+
 //
 // isPlaying
 //
@@ -697,7 +704,7 @@ void ASReadStreamCallBack
 		//
 		// Create the HTTP GET request
 		//
-		CFHTTPMessageRef message= CFHTTPMessageCreateRequest(NULL, (CFStringRef)@"GET", url, kCFHTTPVersion1_1);
+		CFHTTPMessageRef message= CFHTTPMessageCreateRequest(NULL, (CFStringRef)@"GET", (__bridge CFURLRef)url, kCFHTTPVersion1_1);
 #ifdef SHOUTCAST_METADATA
 		CFHTTPMessageSetHeaderFieldValue(message, CFSTR("icy-metadata"), CFSTR("1"));
 #endif
@@ -2175,7 +2182,7 @@ cleanup:
 	}
 
 	// the following code assumes we're streaming VBR data. for CBR data, the second branch is used.
-	if (inPacketDescriptions)
+	if (vbr)
 	{
 		for (int i = 0; i < inNumberPackets; ++i)
 		{
@@ -2287,6 +2294,7 @@ cleanup:
 				// make space for the new audio data then back out
 				//
 				if (bytesFilled > packetBufferSize)
+                {
 					return;
 				}
 				
@@ -2413,6 +2421,10 @@ cleanup:
 	}
 	
 	[pool release];
+    
+}
+
+
 //
 // Implementation for MyAudioQueueInterruptionListener
 //
@@ -2436,3 +2448,15 @@ cleanup:
 		} 
 
 	else if (inInterruptionState == kAudioSessionEndInterruption) 
+    {
+            
+    }
+        
+    }
+    
+}
+    }
+}
+
+
+@end
