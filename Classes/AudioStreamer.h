@@ -197,6 +197,17 @@ extern NSString * const ASUpdateMetadataNotification;
 	unsigned int dataBytesRead;							// how many bytes of data have been read
 	NSMutableString *metaDataString;			// the metaDataString
 #endif
+	BOOL vbr; // indicates VBR (or not) stream
+    
+
+#if defined (USE_PREBUFFER) && USE_PREBUFFER
+    NSLock * _bufferLock;
+    NSLock * _audioStreamLock;
+    NSMutableArray * _buffers;
+    NSThread * _bufferPushingThread;
+    BOOL _allBufferPushed;
+    BOOL _finishedBuffer;
+#endif
 }
 
 @property AudioStreamerErrorCode errorCode;
@@ -228,6 +239,7 @@ extern NSString * const ASUpdateMetadataNotification;
 - (float)averagePowerForChannel:(NSUInteger)channelNumber;
 
 
+- (void)setVolume:(float)vol;
 @end
 
 

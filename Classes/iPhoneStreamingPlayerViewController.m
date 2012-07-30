@@ -23,7 +23,6 @@
 
 #import "iPhoneStreamingPlayerAppDelegate.h"
 #import "iPhoneStreamingPlayerViewController.h"
-#import "iPhoneStreamingPlayerAppDelegate.h"
 #import "AudioStreamer.h"
 #import "LevelMeterView.h"
 #import <QuartzCore/CoreAnimation.h>
@@ -72,8 +71,7 @@
 //
 - (void)destroyStreamer
 {
-    iPhoneStreamingPlayerAppDelegate *appdelegate = (iPhoneStreamingPlayerAppDelegate *)[[UIApplication sharedApplication] delegate];
-	if (appdelegate.streamer != nil)
+
 	{
 		[[NSNotificationCenter defaultCenter]
 			removeObserver:self
@@ -85,62 +83,6 @@
 		[appdelegate.streamer stop];
 		[appdelegate.streamer release];
 		appdelegate.streamer = nil;
-	}
-}
-
-//
-// forceUIUpdate
-//
-// When foregrounded force UI update since we didn't update in the background
-//
--(void)forceUIUpdate {
-	if (currentArtist)
-		metadataArtist.text = currentArtist;
-	if (currentTitle)
-		metadataTitle.text = currentTitle;
-     
-	if (!streamer) {
-		[levelMeterView updateMeterWithLeftValue:0.0 
-									  rightValue:0.0];
-		[self setButtonImage:[UIImage imageNamed:@"playbutton.png"]];
-	}
-	else 
-		[self playbackStateChanged:NULL];
-}
-
-//
-// createTimers
-//
-// Creates or destoys the timers
-//
--(void)createTimers:(BOOL)create {
-	if (create) {
-		if (streamer) {
-				[self createTimers:NO];
-				progressUpdateTimer =
-				[NSTimer
-				 scheduledTimerWithTimeInterval:0.1
-				 target:self
-				 selector:@selector(updateProgress:)
-				 userInfo:nil
-				 repeats:YES];
-				levelMeterUpdateTimer = [NSTimer scheduledTimerWithTimeInterval:.1 
-																		 target:self 
-																	   selector:@selector(updateLevelMeters:) 
-																	   userInfo:nil 
-																		repeats:YES];
-		}
-	}
-	else {
-		if (progressUpdateTimer)
-		{
-			[progressUpdateTimer invalidate];
-			progressUpdateTimer = nil;
-		}
-		if(levelMeterUpdateTimer) {
-			[levelMeterUpdateTimer invalidate];
-			levelMeterUpdateTimer = nil;
-		}
 	}
 }
 
@@ -167,8 +109,13 @@
 	NSURL *url = [NSURL URLWithString:escapedValue];
 	appdelegate.streamer = [[AudioStreamer alloc] initWithURL:url];
 	
-	[self createTimers:YES];
-
+	progressUpdateTimer =
+		[NSTimer
+			scheduledTimerWithTimeInterval:0.1
+			target:self
+			selector:@selector(updateProgress:)
+			userInfo:nil
+			repeats:YES];
 	[[NSNotificationCenter defaultCenter]
 		addObserver:self
 		selector:@selector(playbackStateChanged:)
@@ -306,147 +253,6 @@
 	}
 	else if ([appdelegate.streamer isIdle])
 	{
-		if (appDelegate.uiIsVisible) {
-			[levelMeterView updateMeterWithLeftValue:0.0 
-										   rightValue:0.0];
-			[self setButtonImage:[UIImage imageNamed:@"playbutton.png"]];
-		}
-		[self destroyStreamer];
-		[self setButtonImageNamed:@"playbutton.png"];
-	}
-}
-
-#ifdef SHOUTCAST_METADATA
-/** Example metadata
- * 
- StreamTitle='Kim Sozzi / Amuka / Livvi Franc - Secret Love / It's Over / Automatik',
- StreamUrl='&artist=Kim%20Sozzi%20%2F%20Amuka%20%2F%20Livvi%20Franc&title=Secret%20Love%20%2F%20It%27s%20Over%20%2F%20Automatik&album=&duration=1133453&songtype=S&overlay=no&buycd=&website=&picture=',
-
- Format is generally "Artist hypen Title" although servers may deliver only one. This code assumes 1 field is artist.
- */
-- (void)metadataChanged:(NSNotification *)aNotification
-{
-	NSString *streamArtist;
-	NSString *streamTitle;
-	NSString *streamAlbum;
-    //NSLog(@"Raw meta data = %@", [[aNotification userInfo] objectForKey:@"metadata"]);
-          
-	NSArray *metaParts = [[[aNotification userInfo] objectForKey:@"metadata"] componentsSeparatedByString:@";"];
-	NSString *item;
-	NSMutableDictionary *hash = [[NSMutableDictionary alloc] init];
-	for (item in metaParts) {
-		// split the key/value pair
-		NSArray *pair = [item componentsSeparatedByString:@"="];
-		// don't bother with bad metadata
-		if ([pair count] == 2)
-			[hash setObject:[pair objectAtIndex:1] forKey:[pair objectAtIndex:0]];
-	}
-
-	// do something with the StreamTitle
-	NSString *streamString = [[hash objectForKey:@"StreamTitle"] stringByReplacingOccurrencesOfString:@"'" withString:@""];
-	
-	NSArray *streamParts = [streamString componentsSeparatedByString:@" - "];
-	if ([streamParts count] > 0) {
-		streamArtist = [streamParts objectAtIndex:0];
-	} else {
-		streamArtist = @"";
-	}
-	// this looks odd but not every server will have all artist hyphen title
-	if ([streamParts count] >= 2) {
-		streamTitle = [streamParts objectAtIndex:1];
-		if ([streamParts count] >= 3) {
-			streamAlbum = [streamParts objectAtIndex:2];
-		} else {
-			streamAlbum = @"N/A";
-		}
-	} else {
-		streamTitle = @"";
-		streamAlbum = @"";
-	}
-	NSLog(@"%@ by %@ from %@", streamTitle, streamArtist, streamAlbum);
-
-	// only update the UI if in foreground
-	iPhoneStreamingPlayerAppDelegate *appDelegate = [[UIApplication sharedApplication] delegate];
-	if (appDelegate.uiIsVisible) {
-		metadataArtist.text = streamArtist;
-		metadataTitle.text = streamTitle;
-		metadataAlbum.text = streamAlbum;
-	}
-	self.currentArtist = streamArtist;
-	self.currentTitle = streamTitle;
-}
-#endif
-
-//
-// updateProgress:
-//
-// Invoked when the AudioStreamer
-// reports that its playback progress has changed.
-//
-- (void)updateProgress:(NSTimer *)updatedTimer
-{
-    iPhoneStreamingPlayerAppDelegate *appdelegate = (iPhoneStreamingPlayerAppDelegate *)[[UIApplication sharedApplication] delegate];
-	if (appdelegate.streamer.bitRate != 0.0)
-	{
-		double progress = appdelegate.streamer.progress;
-		double duration = appdelegate.streamer.duration;
-		
-		if (duration > 0)
-		{
-			[positionLabel setText:
-				[NSString stringWithFormat:@"Time Played: %.1f/%.1f seconds",
-					progress,
-					duration]];
-			[progressSlider setEnabled:YES];
-			[progressSlider setValue:100 * progress / duration];
-		}
-		else
-		{
-			[progressSlider setEnabled:NO];
-		}
-	}
-	else
-	{
-		positionLabel.text = @"Time Played:";
-	}
-}
-
-
-//
-// updateLevelMeters:
-//
-
-- (void)updateLevelMeters:(NSTimer *)timer {
-	iPhoneStreamingPlayerAppDelegate *appDelegate = (iPhoneStreamingPlayerAppDelegate *)[[UIApplication sharedApplication] delegate];
-	if([streamer isMeteringEnabled] && appDelegate.uiIsVisible) {
-		[levelMeterView updateMeterWithLeftValue:[streamer averagePowerForChannel:0] 
-									  rightValue:[streamer averagePowerForChannel:([streamer numberOfChannels] > 1 ? 1 : 0)]];
-	}
-}
-
-
-//
-// textFieldShouldReturn:
-//
-// Dismiss the text field when done is pressed
-//
-// Parameters:
-//    sender - the text field
-//
-// returns YES
-//
-- (BOOL)textFieldShouldReturn:(UITextField *)sender
-{
-	[sender resignFirstResponder];
-	[self createStreamer];
-	return YES;
-}
-
-//
-// dealloc
-//
-// Releases instance memory.
-//
 - (void)dealloc
 {
 	[self destroyStreamer];

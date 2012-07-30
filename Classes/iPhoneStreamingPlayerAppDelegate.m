@@ -33,17 +33,26 @@
 
 @implementation iPhoneStreamingPlayerAppDelegate
 
-@synthesize streamer;
-
 @synthesize window;
 @synthesize viewController;
 
+@synthesize uiIsVisible;
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
+	self.uiIsVisible = YES;
+		NSDictionary *credentialStorage =
+			[[NSURLCredentialStorage sharedCredentialStorage] allCredentials];
+		NSLog(@"Credentials: %@", credentialStorage);
+	[viewController createTimers:YES];
+	[viewController forceUIUpdate];
     // Override point for customization after app launch    
     [window addSubview:viewController.view];
     [window makeKeyAndVisible];
-	
-	[viewController buttonPressed:nil];
+	[[NSNotificationCenter defaultCenter]
+	 addObserver:self
+	 selector:@selector(presentAlertWithTitle:)
+	 name:ASPresentAlertWithTitleNotification
+	 object:nil];
+	[[NSThread currentThread] setName:@"Main Thread"];
 }
 
 

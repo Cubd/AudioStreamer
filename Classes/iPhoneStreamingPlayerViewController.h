@@ -22,8 +22,9 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "AudioStreamer.h"
-@class AudioStreamer;
+
+@class AudioStreamer, LevelMeterView;
+
 @interface iPhoneStreamingPlayerViewController : UIViewController
 {
 	IBOutlet UITextField *downloadSourceField;
@@ -31,7 +32,15 @@
 	IBOutlet UIView *volumeSlider;
 	IBOutlet UILabel *positionLabel;
 	IBOutlet UISlider *progressSlider;
+	IBOutlet UITextField *metadataArtist;
+	IBOutlet UITextField *metadataTitle;
+	IBOutlet UITextField *metadataAlbum;
+	AudioStreamer *streamer;
 	NSTimer *progressUpdateTimer;
+	NSTimer *levelMeterUpdateTimer;
+	LevelMeterView *levelMeterView;
+	NSString *currentArtist;
+	NSString *currentTitle;
 	NSString *currentImageName;
 }
 

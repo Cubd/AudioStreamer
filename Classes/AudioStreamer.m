@@ -22,7 +22,6 @@
 //
 
 #import "AudioStreamer.h"
-#import "iPhoneStreamingPlayerAppDelegate.h"
 #if TARGET_OS_IPHONE			
 #import <CFNetwork/CFNetwork.h>
 #import "UIDevice+Hardware.h"
@@ -31,7 +30,9 @@
 #define kCFCoreFoundationVersionNumber_MIN 550.00
 #endif
 
-#define BitRateEstimationMaxPackets 6000
+#define RELEASE_SAFELY(_x) if(_x){[(_x) release];_x=nil;}
+
+#define BitRateEstimationMaxPackets 5000
 #define BitRateEstimationMinPackets 50
 
 NSString * const ASStatusChangedNotification = @"ASStatusChangedNotification";
@@ -67,15 +68,10 @@ NSString * const AS_GET_AUDIO_TIME_FAILED_STRING = @"Audio queue get current tim
 NSString * const AS_AUDIO_STREAMER_FAILED_STRING = @"Audio playback failed";
 NSString * const AS_NETWORK_CONNECTION_FAILED_STRING = @"Network connection failed";
 NSString * const AS_AUDIO_BUFFER_TOO_SMALL_STRING = @"Audio packets are larger than kAQDefaultBufSize.";
-NSString * const AS_AUDIO_MEMORY_ALLOC_FAILED_STRING = @"Alloc memory failed";
 
 @interface AudioStreamer ()
 @property (readwrite) AudioStreamerState state;
-#if defined (USE_PREBUFFER) && USE_PREBUFFER
-@property (readwrite) BOOL allBufferPushed;
-@property (readwrite) BOOL finishedBuffer;
-- (void)pushingBufferThread:(id)object;
-#endif
+
 - (void)handlePropertyChangeForFileStream:(AudioFileStreamID)inAudioFileStream
 	fileStreamPropertyID:(AudioFileStreamPropertyID)inPropertyID
 	ioFlags:(UInt32 *)ioFlags;
@@ -301,17 +297,6 @@ void ASReadStreamCallBack
 
 
 //
-// bufferFillPercentage
-//
-// returns a value between 0 and 1 that represents how full the buffer is
-//
--(double)bufferFillPercentage
-{
-	return (double)buffersUsed/(double)(kNumAQBufs - 1);
-}
-
-
-//
 // isFinishing
 //
 // returns YES if the audio has reached a stopping condition.
@@ -410,8 +395,6 @@ void ASReadStreamCallBack
 			return AS_AUDIO_STREAMER_FAILED_STRING;
 		case AS_AUDIO_BUFFER_TOO_SMALL:
 			return AS_AUDIO_BUFFER_TOO_SMALL_STRING;
-        case AS_AUDIO_MEMORY_ALLOC_FAILED:
-            return AS_AUDIO_MEMORY_ALLOC_FAILED_STRING;
 		default:
 			return AS_AUDIO_STREAMER_FAILED_STRING;
 	}
@@ -534,12 +517,6 @@ void ASReadStreamCallBack
 			}
 		}
 	}
-}
-
-- (AudioStreamerState)state {
-    @synchronized(self) {
-        return state;
-    }
 }
 
 //
@@ -790,7 +767,7 @@ void ASReadStreamCallBack
 		if (!CFReadStreamOpen(stream))
 		{
 			CFRelease(stream);
-            stream = NULL;
+
 			[self presentAlertWithTitle:NSLocalizedStringFromTable(@"File Error", @"Errors", nil)
 								message:NSLocalizedStringFromTable(@"Unable to configure network read stream.", @"Errors", nil)];
 			return NO;
@@ -894,12 +871,10 @@ void ASReadStreamCallBack
 	BOOL isRunning = YES;
 	do
 	{
-        NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-        
 		isRunning = [[NSRunLoop currentRunLoop]
 			runMode:NSDefaultRunLoopMode
 			beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
-        
+		
 		@synchronized(self) {
 			if (seekWasRequested) {
 				[self internalSeekToTime:requestedSeekTime];
@@ -922,13 +897,7 @@ void ASReadStreamCallBack
 			}
 			self.state = AS_BUFFERING;
 		}
-        [pool drain];
-        [NSThread sleepForTimeInterval:0.01];
-#if defined (USE_PREBUFFER) && USE_PREBUFFER
-	} while ((self.allBufferPushed || isRunning || [self isFinishing]) && ![self runLoopShouldExit]);
-#else
-    } while (isRunning && ![self runLoopShouldExit]);
-#endif
+	} while (isRunning && ![self runLoopShouldExit]);
 	
 cleanup:
 
@@ -943,15 +912,10 @@ cleanup:
 			CFRelease(stream);
 			stream = nil;
 		}
-    }
+		
 		//
 		// Close the audio file strea,
 		//
-
-//MUST divde @synchronized(self) {} into two blocks , 
-//or it will run in dead lock
-//use a audioStreamLock is to prevent audio stream is closed when pushDataThread is pushing data
-        [_audioStreamLock lock];
 		if (audioFileStream)
 		{
 			err = AudioFileStreamClose(audioFileStream);
@@ -961,9 +925,7 @@ cleanup:
 				[self failWithErrorCode:AS_FILE_STREAM_CLOSE_FAILED];
 			}
 		}
-        [_audioStreamLock unlock];
-    @synchronized(self)
-    {
+		
 		//
 		// Dispose of the Audio Queue
 		//
@@ -1290,7 +1252,7 @@ cleanup:
 {
 	@synchronized(self)
 	{
-		if (state == AS_PLAYING || state == AS_BUFFERING) //if is buffering, the user pauses it
+		if (state == AS_PLAYING)
 		{
 			err = AudioQueuePause(audioQueue);
 			if (err)
@@ -1337,8 +1299,8 @@ cleanup:
 		if (state == AS_WAITING_FOR_DATA || state == AS_STARTING_FILE_THREAD)
 			return;
 		if (audioQueue &&
-			(self.state == AS_PLAYING || self.state == AS_PAUSED ||
-				self.state == AS_BUFFERING || self.state == AS_WAITING_FOR_QUEUE_TO_START))
+			(state == AS_PLAYING || state == AS_PAUSED ||
+				state == AS_BUFFERING || state == AS_WAITING_FOR_QUEUE_TO_START))
 		{
 			self.state = AS_STOPPING;
 			stopReason = AS_STOPPING_USER_ACTION;
@@ -1349,17 +1311,15 @@ cleanup:
 				return;
 			}
 		}
-		else if (self.state != AS_INITIALIZED)
+		else if (state != AS_INITIALIZED)
 		{
 			self.state = AS_STOPPED;
 			stopReason = AS_STOPPING_USER_ACTION;
 		}
 		seekWasRequested = NO;
 	}
-	//not use atomic property may accidentally encounter weird situation
-    //when state is AS_INITIALIZED but the while statement fall into a 
-    //dead loop.
-	while (self.state != AS_INITIALIZED)
+	
+	while (state != AS_INITIALIZED)
 	{
 		[NSThread sleepForTimeInterval:0.1];
 	}
@@ -1404,77 +1364,72 @@ cleanup:
 	}
 	else if (eventType == kCFStreamEventEndEncountered)
 	{
-#if defined (USE_PREBUFFER) && USE_PREBUFFER
-        self.finishedBuffer = YES;
-#endif
-        if ([url isFileURL]) {
-            @synchronized(self)
-            {
-                if ([self isFinishing])
-                {
-                    return;
-                }
-            }
-            
-            //
-            // If there is a partially filled buffer, pass it to the AudioQueue for
-            // processing
-            //
-            if (bytesFilled)
-            {
-                if (self.state == AS_WAITING_FOR_DATA)
-                {
-                    //
-                    // Force audio data smaller than one whole buffer to play.
-                    //
-                    self.state = AS_FLUSHING_EOF;
-                }
-                [self enqueueBuffer];
-            }
-            
-            @synchronized(self)
-            {
-                if (state == AS_WAITING_FOR_DATA)
-                {
-                    [self failWithErrorCode:AS_AUDIO_DATA_NOT_FOUND];
-                }
-                
-                //
-                // We left the synchronized section to enqueue the buffer so we
-                // must check that we are !finished again before touching the
-                // audioQueue
-                //
-                else if (![self isFinishing])
-                {
-                    if (audioQueue)
-                    {
-                        //
-                        // Set the progress at the end of the stream
-                        //
-                        err = AudioQueueFlush(audioQueue);
-                        if (err)
-                        {
-                            [self failWithErrorCode:AS_AUDIO_QUEUE_FLUSH_FAILED];
-                            return;
-                        }
-                        
-                        self.state = AS_STOPPING;
-                        stopReason = AS_STOPPING_EOF;
-                        err = AudioQueueStop(audioQueue, false);
-                        if (err)
-                        {
-                            [self failWithErrorCode:AS_AUDIO_QUEUE_FLUSH_FAILED];
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        self.state = AS_STOPPED;
-                        stopReason = AS_STOPPING_EOF;
-                    }
-                }
-            }
-        }
+		@synchronized(self)
+		{
+			if ([self isFinishing])
+			{
+				return;
+			}
+		}
+		
+		//
+		// If there is a partially filled buffer, pass it to the AudioQueue for
+		// processing
+		//
+		if (bytesFilled)
+		{
+			if (self.state == AS_WAITING_FOR_DATA)
+			{
+				//
+				// Force audio data smaller than one whole buffer to play.
+				//
+				self.state = AS_FLUSHING_EOF;
+			}
+			[self enqueueBuffer];
+		}
+
+		@synchronized(self)
+		{
+			if (state == AS_WAITING_FOR_DATA)
+			{
+				[self failWithErrorCode:AS_AUDIO_DATA_NOT_FOUND];
+			}
+			
+			//
+			// We left the synchronized section to enqueue the buffer so we
+			// must check that we are !finished again before touching the
+			// audioQueue
+			//
+			else if (![self isFinishing])
+			{
+				if (audioQueue)
+				{
+					//
+					// Set the progress at the end of the stream
+					//
+					err = AudioQueueFlush(audioQueue);
+					if (err)
+					{
+						[self failWithErrorCode:AS_AUDIO_QUEUE_FLUSH_FAILED];
+						return;
+					}
+
+					self.state = AS_STOPPING;
+					stopReason = AS_STOPPING_EOF;
+					err = AudioQueueStop(audioQueue, false);
+					if (err)
+					{
+						[self failWithErrorCode:AS_AUDIO_QUEUE_FLUSH_FAILED];
+						return;
+					}
+				}
+				else
+				{
+					self.state = AS_STOPPED;
+					stopReason = AS_STOPPING_EOF;
+				}
+			}
+		}
 	}
 	else if (eventType == kCFStreamEventHasBytesAvailable)
 	{
@@ -1536,6 +1491,7 @@ cleanup:
 			// Read the bytes from the stream
 			//
 			length = CFReadStreamRead(stream, bytes, kAQDefaultBufSize);
+			
 			if (length == -1)
 			{
 				[self failWithErrorCode:AS_AUDIO_DATA_NOT_FOUND];
@@ -1831,184 +1787,26 @@ cleanup:
 #else
 		if (discontinuous)
 		{
-			/*
-			 * SHOUTcast can send the interval byte by itself. In that case lengthNoMetaData is 0, but
-			 * the interval byte should not be sent to the audio queue. The check for a metaDataInterval == 0
-			 * will make sure that we don't ever send in the interval byte on a stream with metadata
-			 */
-			
-			if (lengthNoMetaData > 0)
+			err = AudioFileStreamParseBytes(audioFileStream, length, bytes, kAudioFileStreamParseFlag_Discontinuity);
+			if (err)
 			{
-				//NSLog(@"Parsing no meta bytes (Discontinuous).");
-                [_audioStreamLock lock];
-				err = AudioFileStreamParseBytes(audioFileStream, lengthNoMetaData, bytesNoMetaData, kAudioFileStreamParseFlag_Discontinuity);
-                [_audioStreamLock unlock];
-				if (err)
-				{
-					[self failWithErrorCode:AS_FILE_STREAM_PARSE_BYTES_FAILED];
-					return;
-				}			
-			}
-			else if (metaDataInterval == 0)	// make sure this isn't a stream with metadata
-			{
-				//NSLog(@"Parsing normal bytes (Discontinuous).");
-                [_audioStreamLock lock];
-				err = AudioFileStreamParseBytes(audioFileStream, length, bytes, kAudioFileStreamParseFlag_Discontinuity);
-                [_audioStreamLock unlock];
-				if (err)
-				{
-					[self failWithErrorCode:AS_FILE_STREAM_PARSE_BYTES_FAILED];
-					return;
-				}
+				[self failWithErrorCode:AS_FILE_STREAM_PARSE_BYTES_FAILED];
+				return;
 			}
 		}
 		else
 		{
-			if (lengthNoMetaData > 0)
+			err = AudioFileStreamParseBytes(audioFileStream, length, bytes, 0);
+			if (err)
 			{
-				//NSLog(@"Parsing no meta bytes.");
-                [_audioStreamLock lock];
-				err = AudioFileStreamParseBytes(audioFileStream, lengthNoMetaData, bytesNoMetaData, 0);
-                [_audioStreamLock unlock];
-				if (err)
-				{
-					[self failWithErrorCode:AS_FILE_STREAM_PARSE_BYTES_FAILED];
-					return;
-				}
+				[self failWithErrorCode:AS_FILE_STREAM_PARSE_BYTES_FAILED];
+				return;
 			}
 		}
 #endif
 	}
 }
 
-#if defined (USE_PREBUFFER) && USE_PREBUFFER
-- (void)pushingBufferThread:(id)object
-{
-    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-    //@autoreleasepool
-    {
-        NSData * data = nil;
-
-        while (![self runLoopShouldExit]) {
-            NSAutoreleasePool * inpool = [[NSAutoreleasePool alloc] init];
-//            @autoreleasepool
-            {
-                data = nil;
-                [_bufferLock lock];
-                if ([_buffers count]) {
-                    data = [[[_buffers objectAtIndex:0] retain] autorelease];
-                    [_buffers removeObjectAtIndex:0];
-                }
-                [_bufferLock unlock];
-                if (data) {
-                    if (discontinuous)
-                    {
-                        [_audioStreamLock lock];
-                        err = AudioFileStreamParseBytes(audioFileStream, data.length, data.bytes, kAudioFileStreamParseFlag_Discontinuity);
-                        [_audioStreamLock unlock];
-                        if (err)
-                        {
-                            [self failWithErrorCode:AS_FILE_STREAM_PARSE_BYTES_FAILED];
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        [_audioStreamLock lock];
-                        err = AudioFileStreamParseBytes(audioFileStream, data.length, data.bytes, 0);
-                        [_audioStreamLock unlock];
-                        if (err)
-                        {
-                            [self failWithErrorCode:AS_FILE_STREAM_PARSE_BYTES_FAILED];
-                            return;
-                        }
-                    }
-                }
-                else if(self.finishedBuffer){
-                    @synchronized(self)
-                    {
-                        if ([self isFinishing])
-                        {
-                            return;
-                        }
-                    }
-                    
-                    //
-                    // If there is a partially filled buffer, pass it to the AudioQueue for
-                    // processing
-                    //
-                    if (bytesFilled)
-                    {
-                        if (self.state == AS_WAITING_FOR_DATA)
-                        {
-                            //
-                            // Force audio data smaller than one whole buffer to play.
-                            //
-                            self.state = AS_FLUSHING_EOF;
-                        }
-                        [self enqueueBuffer];
-                    }
-                    
-                    @synchronized(self)
-                    {
-                        if (state == AS_WAITING_FOR_DATA)
-                        {
-                            [self failWithErrorCode:AS_AUDIO_DATA_NOT_FOUND];
-                        }
-                        
-                        //
-                        // We left the synchronized section to enqueue the buffer so we
-                        // must check that we are !finished again before touching the
-                        // audioQueue
-                        //
-                        else if (![self isFinishing])
-                        {
-                            if (audioQueue)
-                            {
-                                //
-                                // Set the progress at the end of the stream
-                                //
-                                err = AudioQueueFlush(audioQueue);
-                                if (err)
-                                {
-                                    [self failWithErrorCode:AS_AUDIO_QUEUE_FLUSH_FAILED];
-                                    return;
-                                }
-                                
-                                self.state = AS_STOPPING;
-                                stopReason = AS_STOPPING_EOF;
-                                err = AudioQueueStop(audioQueue, false);
-                                if (err)
-                                {
-                                    [self failWithErrorCode:AS_AUDIO_QUEUE_FLUSH_FAILED];
-                                    return;
-                                }
-                            }
-                            else
-                            {
-                                self.state = AS_STOPPED;
-                                stopReason = AS_STOPPING_EOF;
-                            }
-                        }
-                    }
-                }
-                else {
-//                    [NSThread sleepForTimeInterval:0.01];
-                }
-            }
-            [inpool drain];
-            
-            [NSThread sleepForTimeInterval:0.01];
-        }
-        self.allBufferPushed = YES;
-        @synchronized(self) { 
-            RELEASE_SAFELY(_bufferPushingThread);
-        }
-    }
-    
-    [pool drain];
-}
-#endif
 //
 // enqueueBuffer
 //
@@ -2132,7 +1930,6 @@ cleanup:
 	
 	// create the audio queue
 	err = AudioQueueNewOutput(&asbd, MyAudioQueueOutputCallback, self, NULL, NULL, 0, &audioQueue);
-    
 	if (err)
 	{
 		[self failWithErrorCode:AS_AUDIO_QUEUE_CREATION_FAILED];
@@ -2490,7 +2287,6 @@ cleanup:
 				// make space for the new audio data then back out
 				//
 				if (bytesFilled > packetBufferSize)
-				{
 					return;
 				}
 				
@@ -2616,12 +2412,7 @@ cleanup:
 		}
 	}
 	
-	[pool drain];
-}
-
-#if TARGET_OS_IPHONE
-//
-// handleInterruptionChangeForQueue:propertyID:
+	[pool release];
 //
 // Implementation for MyAudioQueueInterruptionListener
 //
@@ -2637,21 +2428,11 @@ cleanup:
 			[self pause];
 			
 			pausedByInterruption = YES; 
-		} 
-	}
-	else if (inInterruptionState == kAudioSessionEndInterruption) 
-	{
-		AudioSessionSetActive( true );
-		NSLog(@"Interruption trying to reactivate.");
-		if ([self isPaused] && pausedByInterruption) {
-			[self pause]; // this is actually resume
+	{ 
+		if ([self isPlaying]) {
+			[self pause];
 			
-			pausedByInterruption = NO; // this is redundant 
-		}
-	}
-}
-#endif
+			pausedByInterruption = YES; 
+		} 
 
-@end
-
-
+	else if (inInterruptionState == kAudioSessionEndInterruption) 
