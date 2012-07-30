@@ -196,9 +196,7 @@ extern NSString * const ASUpdateMetadataNotification;
 	unsigned int metaDataBytesRemaining;	// how many bytes of metadata remain to be read
 	unsigned int dataBytesRead;							// how many bytes of data have been read
 	NSMutableString *metaDataString;			// the metaDataString
-#endif
-	BOOL vbr; // indicates VBR (or not) stream
-    
+#endif    
 
 #if defined (USE_PREBUFFER) && USE_PREBUFFER
     NSLock * _bufferLock;

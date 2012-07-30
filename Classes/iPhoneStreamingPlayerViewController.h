@@ -51,11 +51,9 @@
 - (void)spinButton;
 - (void)forceUIUpdate;
 - (void)createTimers:(BOOL)create;
-- (void)playbackStateChanged:(NSNotification *)aNotification;
 - (void)updateProgress:(NSTimer *)updatedTimer;
 - (IBAction)sliderMoved:(UISlider *)aSlider;
-- (void)destroyStreamer;
-- (void)createStreamer;
+
 
 @end
 

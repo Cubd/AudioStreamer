@@ -13,9 +13,9 @@
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		288765A50DF7441C002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765A40DF7441C002DB57D /* CoreGraphics.framework */; };
 		28D7ACF80DDB3853001CB0EB /* iPhoneStreamingPlayerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 28D7ACF70DDB3853001CB0EB /* iPhoneStreamingPlayerViewController.m */; };
-		762375BF120E049F00518DB5 /* LevelMeterView.m in Sources */ = {isa = PBXBuildFile; fileRef = 762375BE120E049F00518DB5 /* LevelMeterView.m */; };
-		7646A326120C8F3C000ED48C /* UIDevice+Hardware.m in Sources */ = {isa = PBXBuildFile; fileRef = 7646A325120C8F3C000ED48C /* UIDevice+Hardware.m */; };
-		9677A0B715BC2411002AE88D /* AudioStreamer.m in Sources */ = {isa = PBXBuildFile; fileRef = 966F146A15BC1E35005A7BED /* AudioStreamer.m */; };
+		6082252315C658FF005260AF /* AudioStreamer.m in Sources */ = {isa = PBXBuildFile; fileRef = 6082251E15C658FF005260AF /* AudioStreamer.m */; };
+		6082252415C658FF005260AF /* LevelMeterView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6082252015C658FF005260AF /* LevelMeterView.m */; };
+		6082252515C658FF005260AF /* UIDevice+Hardware.m in Sources */ = {isa = PBXBuildFile; fileRef = 6082252215C658FF005260AF /* UIDevice+Hardware.m */; };
 		C90A804C14134C9400810E93 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9E673010FE8C55B0033BF43 /* MainWindow.xib */; };
 		C9423DF10EF8AA6B003B785B /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9423DF00EF8AA6B003B785B /* CFNetwork.framework */; };
 		C9AB93E20FCF816F0047C0FA /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9AB93E10FCF816F0047C0FA /* AudioToolbox.framework */; };
@@ -26,10 +26,6 @@
 		C9E6730A0FE8C5650033BF43 /* stopbutton.png in Resources */ = {isa = PBXBuildFile; fileRef = C9E673060FE8C5650033BF43 /* stopbutton.png */; };
 		C9E6730B0FE8C5650033BF43 /* loadingbutton.png in Resources */ = {isa = PBXBuildFile; fileRef = C9E673070FE8C5650033BF43 /* loadingbutton.png */; };
 		C9E6730C0FE8C5650033BF43 /* pausebutton.png in Resources */ = {isa = PBXBuildFile; fileRef = C9E673080FE8C5650033BF43 /* pausebutton.png */; };
-		FCB039021224369600E538F7 /* loadingbutton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FCB038FE1224369600E538F7 /* loadingbutton@2x.png */; };
-		FCB039031224369600E538F7 /* pausebutton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FCB038FF1224369600E538F7 /* pausebutton@2x.png */; };
-		FCB039041224369600E538F7 /* playbutton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FCB039001224369600E538F7 /* playbutton@2x.png */; };
-		FCB039051224369600E538F7 /* stopbutton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FCB039011224369600E538F7 /* stopbutton@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,8 +39,12 @@
 		28D7ACF70DDB3853001CB0EB /* iPhoneStreamingPlayerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iPhoneStreamingPlayerViewController.m; sourceTree = "<group>"; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		32CA4F630368D1EE00C91783 /* iPhoneStreamingPlayer_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iPhoneStreamingPlayer_Prefix.pch; sourceTree = "<group>"; };
-		966F146915BC1E35005A7BED /* AudioStreamer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioStreamer.h; sourceTree = "<group>"; };
-		966F146A15BC1E35005A7BED /* AudioStreamer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudioStreamer.m; sourceTree = "<group>"; };
+		6082251D15C658FF005260AF /* AudioStreamer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AudioStreamer.h; sourceTree = "<group>"; };
+		6082251E15C658FF005260AF /* AudioStreamer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AudioStreamer.m; sourceTree = "<group>"; };
+		6082251F15C658FF005260AF /* LevelMeterView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LevelMeterView.h; sourceTree = "<group>"; };
+		6082252015C658FF005260AF /* LevelMeterView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LevelMeterView.m; sourceTree = "<group>"; };
+		6082252115C658FF005260AF /* UIDevice+Hardware.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIDevice+Hardware.h"; sourceTree = "<group>"; };
+		6082252215C658FF005260AF /* UIDevice+Hardware.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIDevice+Hardware.m"; sourceTree = "<group>"; };
 		C9423DF00EF8AA6B003B785B /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		C9AB93E10FCF816F0047C0FA /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		C9AB93F20FCF81790047C0FA /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
@@ -83,15 +83,16 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				7646A321120C8F25000ED48C /* Additions */,
-				C9C2D8790EB6E09C00A3D071 /* AudioStreamer.h */,
-				C9C2D8780EB6E09C00A3D071 /* AudioStreamer.m */,
+				6082251D15C658FF005260AF /* AudioStreamer.h */,
+				6082251E15C658FF005260AF /* AudioStreamer.m */,
+				6082251F15C658FF005260AF /* LevelMeterView.h */,
+				6082252015C658FF005260AF /* LevelMeterView.m */,
+				6082252115C658FF005260AF /* UIDevice+Hardware.h */,
+				6082252215C658FF005260AF /* UIDevice+Hardware.m */,
 				1D3623240D0F684500981E51 /* iPhoneStreamingPlayerAppDelegate.h */,
 				1D3623250D0F684500981E51 /* iPhoneStreamingPlayerAppDelegate.m */,
 				28D7ACF60DDB3853001CB0EB /* iPhoneStreamingPlayerViewController.h */,
 				28D7ACF70DDB3853001CB0EB /* iPhoneStreamingPlayerViewController.m */,
-				762375BD120E049F00518DB5 /* LevelMeterView.h */,
-				762375BE120E049F00518DB5 /* LevelMeterView.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -157,15 +158,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		7646A321120C8F25000ED48C /* Additions */ = {
-			isa = PBXGroup;
-			children = (
-				7646A324120C8F3C000ED48C /* UIDevice+Hardware.h */,
-				7646A325120C8F3C000ED48C /* UIDevice+Hardware.m */,
-			);
-			name = Additions;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -192,7 +184,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
+				LastUpgradeCheck = 0430;
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "iPhoneStreamingPlayer" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -234,13 +226,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9677A0B715BC2411002AE88D /* AudioStreamer.m in Sources */,
 				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
 				1D3623260D0F684500981E51 /* iPhoneStreamingPlayerAppDelegate.m in Sources */,
 				28D7ACF80DDB3853001CB0EB /* iPhoneStreamingPlayerViewController.m in Sources */,
-				C9C2D87A0EB6E09C00A3D071 /* AudioStreamer.m in Sources */,
-				7646A326120C8F3C000ED48C /* UIDevice+Hardware.m in Sources */,
-				762375BF120E049F00518DB5 /* LevelMeterView.m in Sources */,
+				6082252315C658FF005260AF /* AudioStreamer.m in Sources */,
+				6082252415C658FF005260AF /* LevelMeterView.m in Sources */,
+				6082252515C658FF005260AF /* UIDevice+Hardware.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -256,9 +247,10 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = iPhoneStreamingPlayer_Prefix.pch;
+				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = iPhoneInfo.plist;
 				PRODUCT_NAME = iPhoneStreamingPlayer;
-				SDKROOT = iphoneos4.1;
+				SDKROOT = iphoneos;
 			};
 			name = Debug;
 		};
@@ -269,8 +261,10 @@
 				COPY_PHASE_STRIP = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = iPhoneStreamingPlayer_Prefix.pch;
+				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = iPhoneInfo.plist;
 				PRODUCT_NAME = iPhoneStreamingPlayer;
+				SDKROOT = iphoneos;
 			};
 			name = Release;
 		};
@@ -283,12 +277,13 @@
 				);
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_THUMB_SUPPORT = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				ONLY_ACTIVE_ARCH = YES;
 				PROVISIONING_PROFILE = "";
-				SDKROOT = iphoneos4.1;
+				SDKROOT = iphoneos;
 			};
 			name = Debug;
 		};
@@ -301,6 +296,7 @@
 				);
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_THUMB_SUPPORT = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PROVISIONING_PROFILE = "";
