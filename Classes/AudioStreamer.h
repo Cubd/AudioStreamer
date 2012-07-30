@@ -20,25 +20,18 @@
 //  3. This notice may not be removed or altered from any source
 //     distribution.
 //
-#define SHOUTCAST_METADATA
 
-#if TARGET_OS_IPHONE			
 #import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+#import <AudioToolbox/AudioToolbox.h>
+#include <pthread.h>
+
 #ifndef kCFCoreFoundationVersionNumber_iPhoneOS_4_0
 #define kCFCoreFoundationVersionNumber_iPhoneOS_4_0 550.32
 #endif
-#else
-#import <Cocoa/Cocoa.h>
-#endif// TARGET_OS_IPHONE			
 
-#import <Foundation/Foundation.h>
-#include <pthread.h>
-#include <AudioToolbox/AudioToolbox.h>
-
-
+#define SHOUTCAST_METADATA 1
 #define USE_PREBUFFER 1
-
-
 #define LOG_QUEUED_BUFFERS 0
 
 #define kNumAQBufs 16			// Number of audio queue buffers we allocate.
@@ -123,9 +116,7 @@ extern NSString * const ASUpdateMetadataNotification;
 
 @interface AudioStreamer : NSObject
 {
-#if TARGET_OS_IPHONE    
 	UIBackgroundTaskIdentifier bgTaskId;
-#endif    
 	NSURL *url;
 
 	//
@@ -181,12 +172,10 @@ extern NSString * const ASUpdateMetadataNotification;
 								// time)
 	double packetDuration;		// sample rate times frames per packet
 	double lastProgress;		// last calculated progress point
-	UInt32 numberOfChannels;	// Number of audio channels in the stream (1 = mono, 2 = stereo)
-        BOOL vbr; 			// indicates VBR (or not) stream
-
-#if TARGET_OS_IPHONE
-        BOOL pausedByInterruption;
-#endif
+    BOOL pausedByInterruption;
+    
+    UInt32 numberOfChannels;	// Number of audio channels in the stream (1 = mono, 2 = stereo)
+    BOOL vbr; 			// indicates VBR (or not) stream
 
 #ifdef SHOUTCAST_METADATA
 	BOOL foundIcyStart;
@@ -212,8 +201,8 @@ extern NSString * const ASUpdateMetadataNotification;
 @property (readonly) AudioStreamerState state;
 @property (readonly) AudioStreamerStopReason stopReason;
 @property (readonly) double progress;
-@property (readonly) double bufferFillLevel;
 @property (readonly) double duration;
+@property (readonly) double bufferFillLevel;
 @property (readwrite) UInt32 bitRate;
 @property (readonly) NSDictionary *httpHeaders;
 @property (readonly) UInt32 numberOfChannels;
@@ -236,12 +225,6 @@ extern NSString * const ASUpdateMetadataNotification;
 - (float)peakPowerForChannel:(NSUInteger)channelNumber;
 - (float)averagePowerForChannel:(NSUInteger)channelNumber;
 
-
 - (void)setVolume:(float)vol;
+
 @end
-
-
-
-
-
-
