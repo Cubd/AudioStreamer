@@ -44,9 +44,6 @@
 	[self setNeedsDisplay];
 }
 
-- (void)dealloc {
-    [super dealloc];
-}
 
 
 @end

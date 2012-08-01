@@ -204,7 +204,7 @@ extern NSString * const ASUpdateMetadataNotification;
 @property (readonly) double duration;
 @property (readonly) double bufferFillLevel;
 @property (readwrite) UInt32 bitRate;
-@property (readonly) NSDictionary *httpHeaders;
+@property (unsafe_unretained, readonly) NSDictionary *httpHeaders;
 @property (readonly) UInt32 numberOfChannels;
 @property (assign, getter=isMeteringEnabled) BOOL meteringEnabled;
 @property (readonly) BOOL vbr;

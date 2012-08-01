@@ -56,11 +56,6 @@
 }
 
 
-- (void)dealloc {
-    [viewController release];
-    [window release];
-    [super dealloc];
-}
 
 - (void)presentAlertWithTitle:(NSNotification *)notification
 {
@@ -80,20 +75,17 @@
                 localNotif.alertBody = message;
                 localNotif.alertAction = NSLocalizedString(@"Open", @"");
                 [[UIApplication sharedApplication] presentLocalNotificationNow:localNotif];
-                [localNotif release];
             }
     #endif
         }
         else {
     #ifdef TARGET_OS_IPHONE
-            UIAlertView *alert = [
-                                  [[UIAlertView alloc]
+            UIAlertView *alert = [[UIAlertView alloc]
                                    initWithTitle:title
                                    message:message
                                    delegate:nil
                                    cancelButtonTitle:NSLocalizedString(@"OK", @"")
-                                   otherButtonTitles: nil]
-                                  autorelease];
+                                   otherButtonTitles: nil];
             /*
             [alert
              performSelector:@selector(show)
