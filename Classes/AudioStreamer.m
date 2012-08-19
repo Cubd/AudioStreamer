@@ -1331,13 +1331,13 @@ cleanup:
             fileLength = [attr fileSize];
 //            RELEASE_SAFELY(mgr);
         }
-		else {
+		else
+        {
             if (!httpHeaders)
             {
                 CFTypeRef message =
                 CFReadStreamCopyProperty(stream, kCFStreamPropertyHTTPResponseHeader);
-                httpHeaders =
-                (NSDictionary *)CFBridgingRelease(CFHTTPMessageCopyAllHeaderFields((CFHTTPMessageRef)message));
+                httpHeaders = (NSDictionary *)CFBridgingRelease(CFHTTPMessageCopyAllHeaderFields((CFHTTPMessageRef)message));
                 CFRelease(message);
                 //NSLog(@"headers %@", httpHeaders);
                 
@@ -2480,6 +2480,10 @@ cleanup:
                         
                         bgTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:NULL];
                     }
+                }
+                else if (self.state == AS_WAITING_FOR_DATA)
+                {
+                    // no big deal.. the callback didn't get called due to the sync on self
                 }
                 else
                 {
