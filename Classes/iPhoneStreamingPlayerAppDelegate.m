@@ -33,9 +33,6 @@
 
 @implementation iPhoneStreamingPlayerAppDelegate
 
-@synthesize window;
-@synthesize viewController;
-
 - (void)applicationDidFinishLaunching:(UIApplication *)application
 {
     NSDictionary *credentialStorage = [[NSURLCredentialStorage sharedCredentialStorage] allCredentials];

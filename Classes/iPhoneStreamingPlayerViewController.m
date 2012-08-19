@@ -45,9 +45,6 @@
 
 @implementation iPhoneStreamingPlayerViewController
 
-@synthesize currentArtist, currentTitle;
-@synthesize uiIsVisible;
-
 //
 // setButtonImageNamed:
 //

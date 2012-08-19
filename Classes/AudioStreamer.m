@@ -210,18 +210,6 @@ void ASReadStreamCallBack(CFReadStreamRef aStream, CFStreamEventType eventType, 
 
 @implementation AudioStreamer
 
-@synthesize errorCode = _errorCode;
-@synthesize state = _state;
-@synthesize stopReason = _stopReason;
-@synthesize bitRate = _bitRate;
-@synthesize httpHeaders = _httpHeaders;
-@synthesize numberOfChannels = _numberOfChannels;
-@synthesize vbr = _vbr;
-#if defined (USE_PREBUFFER) && USE_PREBUFFER
-@synthesize allBufferPushed = _allBufferPushed;
-@synthesize finishedBuffer = _finishedBuffer;
-#endif
-
 //
 // initWithURL
 //
