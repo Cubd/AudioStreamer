@@ -143,6 +143,8 @@
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationStateDidChange:) name:UIApplicationDidBecomeActiveNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationStateDidChange:) name:UIApplicationDidEnterBackgroundNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(presentAlertWithTitle:) name:ASPresentAlertWithTitleNotification object:nil];
+
 }
 
 
@@ -334,8 +336,7 @@
 
 - (void)dealloc
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidBecomeActiveNotification object:nil];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidEnterBackgroundNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     
     [self createTimers:NO];
 	[self destroyStreamer];
@@ -538,6 +539,31 @@
     {
         self.uiIsVisible = NO;
     }
+}
+
+- (void)presentAlertWithTitle:(NSNotification *)notification
+{
+    NSString *title = [[notification userInfo] objectForKey:@"title"];
+    NSString *message = [[notification userInfo] objectForKey:@"message"];
+    
+    dispatch_queue_t main_queue = dispatch_get_main_queue();
+    
+    dispatch_async(main_queue, ^{
+        UIAlertView *alert = [[UIAlertView alloc]
+                              initWithTitle:title
+                              message:message
+                              delegate:nil
+                              cancelButtonTitle:NSLocalizedString(@"OK", @"")
+                              otherButtonTitles: nil];
+        /*
+         [alert
+         performSelector:@selector(show)
+         onThread:[NSThread mainThread]
+         withObject:nil
+         waitUntilDone:NO];
+         */
+        [alert show];
+    });
 }
 
 @end

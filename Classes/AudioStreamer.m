@@ -26,11 +26,10 @@
 #import "UIDevice+Hardware.h"
 #define kCFCoreFoundationVersionNumber_MIN 550.32
 
-//#define RELEASE_SAFELY(_x) if(_x){[(_x) release];_x=nil;}
-
 #define BitRateEstimationMaxPackets 5000
 #define BitRateEstimationMinPackets 50
 
+#pragma mark - Notification Names
 NSString * const ASStatusChangedNotification = @"ASStatusChangedNotification";
 NSString * const ASPresentAlertWithTitleNotification = @"ASPresentAlertWithTitleNotification";
 #ifdef SHOUTCAST_METADATA
@@ -66,13 +65,13 @@ NSString * const AS_AUDIO_MEMORY_ALLOC_FAILED_STRING = @"Alloc memory failed";
 
 
 #pragma mark - Audio Callback Function Prototypes
-static void MyAudioQueueOutputCallback(void *inClientData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffer);
-static void MyAudioQueueIsRunningCallback(void *inUserData, AudioQueueRef inAQ, AudioQueuePropertyID inID);
 static void MyPropertyListenerProc(void *inClientData, AudioFileStreamID inAudioFileStream, AudioFileStreamPropertyID inPropertyID, UInt32 *ioFlags);
 static void MyPacketsProc(void *inClientData, UInt32 inNumberBytes, UInt32 inNumberPackets, const void *inInputData, AudioStreamPacketDescription *inPacketDescriptions);
-static OSStatus MyEnqueueBuffer(AudioStreamer* myData);
+static void MyAudioQueueOutputCallback(void *inClientData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffer);
+static void MyAudioQueueIsRunningCallback(void *inUserData, AudioQueueRef inAQ, AudioQueuePropertyID inID);
 static void MyAudioSessionInterruptionListener(void *inClientData, UInt32 inInterruptionState);
 static void audioRouteChangeListenerCallback(void *inUserData, AudioSessionPropertyID inPropertyID, UInt32 inPropertyValueSize, const void *inPropertyValue);
+static void ASReadStreamCallBack(CFReadStreamRef aStream, CFStreamEventType eventType, void* inClientInfo);
 
 
 #pragma mark - Private Interface
@@ -84,7 +83,6 @@ static void audioRouteChangeListenerCallback(void *inUserData, AudioSessionPrope
 @property (assign, atomic, readwrite) BOOL finishedBuffer;
 - (void)pushingBufferThread:(id)object;
 #endif
-
 - (void)handlePropertyChangeForFileStream:(AudioFileStreamID)inAudioFileStream fileStreamPropertyID:(AudioFileStreamPropertyID)inPropertyID ioFlags:(UInt32 *)ioFlags;
 - (void)handleAudioPackets:(const void *)inInputData numberBytes:(UInt32)inNumberBytes numberPackets:(UInt32)inNumberPackets packetDescriptions:(AudioStreamPacketDescription *)inPacketDescriptions;
 - (void)handleBufferCompleteForQueue:(AudioQueueRef)inAQ buffer:(AudioQueueBufferRef)inBuffer;
@@ -243,13 +241,6 @@ void ASReadStreamCallBack(CFReadStreamRef aStream, CFStreamEventType eventType, 
 - (void)dealloc
 {
 	[self stop];
-#ifdef SHOUTCAST_METADATA
-#endif
-#if defined (USE_PREBUFFER) && USE_PREBUFFER
-//    RELEASE_SAFELY(_buffers);
-//    RELEASE_SAFELY(_bufferLock);
-//    RELEASE_SAFELY(_audioStreamLock);
-#endif
 }
 
 //
@@ -740,7 +731,6 @@ void ASReadStreamCallBack(CFReadStreamRef aStream, CFStreamEventType eventType, 
                               &context);
         CFReadStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
     }
-    
 	
 	return YES;
 }
@@ -1222,8 +1212,7 @@ cleanup:
 //    aStream - the network file stream
 //    eventType - the event which triggered this method
 //
-- (void)handleReadFromStream:(CFReadStreamRef)aStream
-                   eventType:(CFStreamEventType)eventType
+- (void)handleReadFromStream:(CFReadStreamRef)aStream eventType:(CFStreamEventType)eventType
 {
 	if (aStream != stream)
 	{
@@ -1318,7 +1307,6 @@ cleanup:
             NSError * error = nil;
             NSDictionary * attr = [mgr attributesOfItemAtPath:[url path] error:&error];
             fileLength = [attr fileSize];
-//            RELEASE_SAFELY(mgr);
         }
 		else
         {
@@ -1421,10 +1409,13 @@ cleanup:
 						NSDictionary *reqHeaders = (NSDictionary *)CFBridgingRelease(CFHTTPMessageCopyAllHeaderFields(myResponse));
 						//NSLog(@"reqHeaders: %@", reqHeaders);
 						NSString *serverHeader = [reqHeaders valueForKey:@"Server"];
-						if (serverHeader != nil && NSEqualRanges([serverHeader rangeOfString:@"Nanocaster"], NSMakeRange(0, 10))) {
+						if (serverHeader != nil && NSEqualRanges([serverHeader rangeOfString:@"Nanocaster"], NSMakeRange(0, 10)))
+                        {
 							NSLog(@"Wrong stream type - can not continue to parse");
                             
-						} else {
+						}
+                        else
+                        {
 							// Not an ICY response
 							/*NSString *metaInt;
                              metaInt = (NSString *) CFHTTPMessageCopyHeaderFieldValue(myResponse, CFSTR("Icy-Metaint"));
@@ -1621,20 +1612,24 @@ cleanup:
 		}
 #ifdef SHOUTCAST_METADATA
 #if defined (USE_PREBUFFER) && USE_PREBUFFER
-        if (![url isFileURL]) {
+        if (![url isFileURL])
+        {
             NSData * data = [[NSData alloc] initWithBytes:bytes length:length];
             [_bufferLock lock];
             [_buffers addObject:data];
             [_bufferLock unlock];
-            @synchronized(self) {
-                if (nil == _bufferPushingThread) {
+            @synchronized(self)
+            {
+                if (nil == _bufferPushingThread)
+                {
                     _bufferPushingThread = [[NSThread alloc] initWithTarget:self selector:@selector(pushingBufferThread:) object:nil];
                     [_bufferPushingThread setName:@"Push/Parse Buffer Thread"];
                     [_bufferPushingThread start];
                 }
             }
         }
-		else {
+		else
+        {
 #endif
             if (discontinuous)
             {
@@ -1702,14 +1697,17 @@ cleanup:
 		
 #else
 #if defined (USE_PREBUFFER) && USE_PREBUFFER
-        if (![url isFileURL]) {
+        if (![url isFileURL])
+        {
             NSData * data = [[NSData alloc] initWithBytes:bytes length:length];
             [_bufferLock lock];
             [_buffers addObject:data];
             [_bufferLock unlock];
             [data release];
-            @synchronized(self) {
-                if (nil == _bufferPushingThread) {
+            @synchronized(self)
+            {
+                if (nil == _bufferPushingThread)
+                {
                     _bufferPushingThread = [[NSThread alloc] initWithTarget:self selector:@selector(pushingBufferThread:) object:nil];
                     [_bufferPushingThread setName:@"Push/Parse Buffer Thread"];
                     [_bufferPushingThread start];
@@ -1718,7 +1716,8 @@ cleanup:
             //maybe the runloop runs too fast ,that _bufferPushingThread is frequently blocked before the streaing is pre-buffered.
             [NSThread sleepForTimeInterval:0.01];
         }
-		else {
+		else
+        {
 #endif
             if (discontinuous)
             {
@@ -1870,10 +1869,6 @@ cleanup:
             [NSThread sleepForTimeInterval:0.01];
         }
         self.allBufferPushed = YES;
-        @synchronized(self)
-        {
-//            RELEASE_SAFELY(_bufferPushingThread);
-        }
     }    
 }
 #endif

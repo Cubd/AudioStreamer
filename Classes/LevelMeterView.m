@@ -14,8 +14,10 @@
 @implementation LevelMeterView
 
 
-- (id)initWithFrame:(CGRect)frame {
-    if ((self = [super initWithFrame:frame])) {
+- (id)initWithFrame:(CGRect)frame
+{
+    if ((self = [super initWithFrame:frame]))
+    {
         // Initialization code
 		self.backgroundColor = [UIColor blackColor];
     }
@@ -24,7 +26,8 @@
 
 // Only override drawRect: if you perform custom drawing.
 // An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect {
+- (void)drawRect:(CGRect)rect
+{
     // Drawing code
 	[[UIColor whiteColor] set];
 	[@"L" drawInRect:CGRectMake(0.0, 10.0, 15.0, 15.0) withFont:[UIFont boldSystemFontOfSize:[UIFont systemFontSize]] lineBreakMode:UILineBreakModeWordWrap alignment:UITextAlignmentCenter];
@@ -38,7 +41,8 @@
 }
 
 
-- (void)updateMeterWithLeftValue:(CGFloat)left rightValue:(CGFloat)right {
+- (void)updateMeterWithLeftValue:(CGFloat)left rightValue:(CGFloat)right
+{
 	leftValue = left;
 	rightValue = right;
 	[self setNeedsDisplay];

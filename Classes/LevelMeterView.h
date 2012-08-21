@@ -9,7 +9,8 @@
 #import <UIKit/UIKit.h>
 
 
-@interface LevelMeterView : UIView {
+@interface LevelMeterView : UIView
+{
 	CGFloat leftValue;
 	CGFloat rightValue;
 }
