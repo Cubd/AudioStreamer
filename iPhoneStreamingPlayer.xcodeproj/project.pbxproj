@@ -250,6 +250,7 @@
 				GCC_PREFIX_HEADER = iPhoneStreamingPlayer_Prefix.pch;
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = iPhoneInfo.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				PRODUCT_NAME = iPhoneStreamingPlayer;
 				SDKROOT = iphoneos;
 			};
@@ -265,6 +266,7 @@
 				GCC_PREFIX_HEADER = iPhoneStreamingPlayer_Prefix.pch;
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = iPhoneInfo.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				PRODUCT_NAME = iPhoneStreamingPlayer;
 				SDKROOT = iphoneos;
 			};

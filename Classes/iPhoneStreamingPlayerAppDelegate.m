@@ -35,13 +35,10 @@
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application
 {
-    NSDictionary *credentialStorage = [[NSURLCredentialStorage sharedCredentialStorage] allCredentials];
-    NSLog(@"Credentials: %@", credentialStorage);
-    
-    // Override point for customization after app launch    
-    [window addSubview:viewController.view];
-    [window makeKeyAndVisible];
-	[[NSThread currentThread] setName:@"Main Thread"];
+    self.viewController = [[iPhoneStreamingPlayerViewController alloc] initWithNibName:@"iPhoneStreamingPlayerViewController" bundle:nil];
+    [self.window addSubview:self.viewController.view];
+    self.window.rootViewController = self.viewController;
+    [self.window makeKeyAndVisible];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
