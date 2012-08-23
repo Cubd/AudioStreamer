@@ -48,6 +48,4 @@
 	[self setNeedsDisplay];
 }
 
-
-
 @end
