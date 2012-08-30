@@ -1548,7 +1548,7 @@ cleanup:
 				if (statusCode == 200)		// "OK" (this is true even for ICY)
 				{
 					// check if this is a ICY 200 OK response
-					NSString *icyCheck = [[[NSString alloc] initWithBytes:bytes length:10 encoding:NSUTF8StringEncoding] autorelease];
+					NSString *icyCheck = [[NSString alloc] initWithBytes:bytes length:10 encoding:NSUTF8StringEncoding];
 					//NSLog(@"stream bytes %@", [NSString stringWithCString:bytes length:length]); // dataWithBytes:bytes length:1024]);
 					if (icyCheck != nil && [icyCheck caseInsensitiveCompare:@"ICY 200 OK"] == NSOrderedSame)
 					{
@@ -1559,7 +1559,7 @@ cleanup:
 					{
 						// is Live365?
 						// get all the headers
-						NSDictionary *reqHeaders = [(NSDictionary *)CFHTTPMessageCopyAllHeaderFields(myResponse) autorelease];
+						NSDictionary *reqHeaders = (__bridge NSDictionary *)CFHTTPMessageCopyAllHeaderFields(myResponse);
 						//NSLog(@"reqHeaders: %@", reqHeaders);
 						NSString *serverHeader = [reqHeaders valueForKey:@"Server"];
 						if (serverHeader != nil && NSEqualRanges([serverHeader rangeOfString:@"Nanocaster"], NSMakeRange(0, 10))) {
@@ -1578,9 +1578,9 @@ cleanup:
 							NSString *metaInt;
 							NSString *contentType;
 							NSString *icyBr;
-							metaInt = (NSString *) CFHTTPMessageCopyHeaderFieldValue(myResponse, CFSTR("Icy-Metaint"));
-							contentType = (NSString *) CFHTTPMessageCopyHeaderFieldValue(myResponse, CFSTR("Content-Type"));
-							icyBr = (NSString *) CFHTTPMessageCopyHeaderFieldValue(myResponse, CFSTR("icy-br"));
+							metaInt = (__bridge NSString *) CFHTTPMessageCopyHeaderFieldValue(myResponse, CFSTR("Icy-Metaint"));
+							contentType = (__bridge NSString *) CFHTTPMessageCopyHeaderFieldValue(myResponse, CFSTR("Content-Type"));
+							icyBr = (__bridge NSString *) CFHTTPMessageCopyHeaderFieldValue(myResponse, CFSTR("icy-br"));
 							/*if (contentType)
                              {
                              // only if we haven't already set a content-type
@@ -1644,7 +1644,7 @@ cleanup:
 					if (c1 == '\r' && c2 == '\n')
 					{
 						// get the full string
-						NSString *fullString = [[[NSString alloc] initWithBytes:bytes length:streamStart encoding:NSUTF8StringEncoding] autorelease];
+						NSString *fullString = [[NSString alloc] initWithBytes:bytes length:streamStart encoding:NSUTF8StringEncoding];
 						
 						// get the substring for this line
 						NSString *line = [fullString substringWithRange:NSMakeRange(lineStart, (streamStart-lineStart))];
@@ -1714,7 +1714,7 @@ cleanup:
 					if (metaDataBytesRemaining > 0)
 					{
 						//NSLog(@"meta: %C", bytes[i]);
-						[metaDataString appendFormat:@"%C", bytes[i]];
+						[metaDataString appendFormat:@"%c", bytes[i]];
 						
 						metaDataBytesRemaining -= 1;
 						
@@ -1767,7 +1767,7 @@ cleanup:
             [_bufferLock lock];
             [_buffers addObject:data];
             [_bufferLock unlock];
-            [data release];
+//            [data release];
             @synchronized(self) {
                 if (nil == _bufferPushingThread) {
                     _bufferPushingThread = [[NSThread alloc] initWithTarget:self selector:@selector(pushingBufferThread:) object:nil];
