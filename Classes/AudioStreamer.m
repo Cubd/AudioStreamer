@@ -836,7 +836,7 @@ void ASReadStreamCallBack(CFReadStreamRef aStream, CFStreamEventType eventType, 
 #if defined (USE_PREBUFFER) && USE_PREBUFFER
         } while ((self.allBufferPushed || isRunning || [self isFinishing]) && ![self runLoopShouldExit]);
 #else
-    } while (isRunning && ![self runLoopShouldExit]);
+        } while (isRunning && ![self runLoopShouldExit]);
 #endif
     
 cleanup:
@@ -857,7 +857,9 @@ cleanup:
         // MUST divde @synchronized(self) {} into two blocks ,
         // or it will run in dead lock
         // use a audioStreamLock is to prevent audio stream is closed when pushDataThread is pushing data
+#if defined (USE_PREBUFFER) && USE_PREBUFFER
         [_audioStreamLock lock];
+#endif
         
         //
         // Close the audio file strea,
@@ -871,7 +873,9 @@ cleanup:
                 [self failWithErrorCode:AS_FILE_STREAM_CLOSE_FAILED];
             }
         }
+#if defined (USE_PREBUFFER) && USE_PREBUFFER
         [_audioStreamLock unlock];
+#endif
         
         @synchronized(self)
         {
@@ -1642,9 +1646,14 @@ cleanup:
                 if (lengthNoMetaData > 0)
                 {
                     //NSLog(@"Parsing no meta bytes (Discontinuous).");
+#if defined (USE_PREBUFFER) && USE_PREBUFFER
                     [_audioStreamLock lock];
+#endif
                     err = AudioFileStreamParseBytes(audioFileStream, lengthNoMetaData, bytesNoMetaData, kAudioFileStreamParseFlag_Discontinuity);
+#if defined (USE_PREBUFFER) && USE_PREBUFFER
                     [_audioStreamLock unlock];
+#endif
+                    
                     if (err)
                     {
                         [self failWithErrorCode:AS_FILE_STREAM_PARSE_BYTES_FAILED];
@@ -1654,9 +1663,13 @@ cleanup:
                 else if (metaDataInterval == 0)	// make sure this isn't a stream with metadata
                 {
                     //NSLog(@"Parsing normal bytes (Discontinuous).");
+#if defined (USE_PREBUFFER) && USE_PREBUFFER
                     [_audioStreamLock lock];
+#endif
                     err = AudioFileStreamParseBytes(audioFileStream, length, bytes, kAudioFileStreamParseFlag_Discontinuity);
+#if defined (USE_PREBUFFER) && USE_PREBUFFER
                     [_audioStreamLock unlock];
+#endif
                     if (err)
                     {
                         [self failWithErrorCode:AS_FILE_STREAM_PARSE_BYTES_FAILED];
@@ -1669,9 +1682,13 @@ cleanup:
                 if (lengthNoMetaData > 0)
                 {
                     //NSLog(@"Parsing no meta bytes.");
+#if defined (USE_PREBUFFER) && USE_PREBUFFER
                     [_audioStreamLock lock];
+#endif
                     err = AudioFileStreamParseBytes(audioFileStream, lengthNoMetaData, bytesNoMetaData, 0);
+#if defined (USE_PREBUFFER) && USE_PREBUFFER
                     [_audioStreamLock unlock];
+#endif
                     if (err)
                     {
                         [self failWithErrorCode:AS_FILE_STREAM_PARSE_BYTES_FAILED];
@@ -1681,9 +1698,13 @@ cleanup:
                 else if (metaDataInterval == 0)	// make sure this isn't a stream with metadata
                 {
                     //NSLog(@"Parsing normal bytes.");
+#if defined (USE_PREBUFFER) && USE_PREBUFFER
                     [_audioStreamLock lock];
+#endif
                     err = AudioFileStreamParseBytes(audioFileStream, length, bytes, 0);
+#if defined (USE_PREBUFFER) && USE_PREBUFFER
                     [_audioStreamLock unlock];
+#endif
                     if (err)
                     {
                         [self failWithErrorCode:AS_FILE_STREAM_PARSE_BYTES_FAILED];

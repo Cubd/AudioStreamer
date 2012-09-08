@@ -31,7 +31,7 @@
 #endif
 
 #define SHOUTCAST_METADATA 1
-#define USE_PREBUFFER 1
+#define USE_PREBUFFER 0
 #define LOG_QUEUED_BUFFERS 0
 
 #define kNumAQBufs 24			// Number of audio queue buffers we allocate.
