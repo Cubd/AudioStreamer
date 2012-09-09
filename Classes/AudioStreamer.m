@@ -2008,7 +2008,7 @@ cleanup:
 	sampleRate = asbd.mSampleRate;
 	packetDuration = asbd.mFramesPerPacket / sampleRate;
 	
-	numberOfChannels = asbd.mChannelsPerFrame;
+	_numberOfChannels = asbd.mChannelsPerFrame;
 	
 	// create the audio queue
 	err = AudioQueueNewOutput(&asbd, MyAudioQueueOutputCallback, (__bridge void *)(self), NULL, NULL, 0, &audioQueue);

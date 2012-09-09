@@ -174,7 +174,7 @@ extern NSString * const ASUpdateMetadataNotification;
 	double lastProgress;		// last calculated progress point
     BOOL pausedByInterruption;
     
-    UInt32 numberOfChannels;	// Number of audio channels in the stream (1 = mono, 2 = stereo)
+    UInt32 _numberOfChannels;	// Number of audio channels in the stream (1 = mono, 2 = stereo)
     BOOL vbr; 			// indicates VBR (or not) stream
 
 #ifdef SHOUTCAST_METADATA
