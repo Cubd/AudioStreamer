@@ -30,11 +30,11 @@
 #define kCFCoreFoundationVersionNumber_iPhoneOS_4_0 550.32
 #endif
 
-#define SHOUTCAST_METADATA 1
+//#define SHOUTCAST_METADATA 0
 #define USE_PREBUFFER 0
 #define LOG_QUEUED_BUFFERS 0
 
-#define kNumAQBufs 24			// Number of audio queue buffers we allocate.
+#define kNumAQBufs 48			// Number of audio queue buffers we allocate.
 								// Needs to be big enough to keep audio pipeline
 								// busy (non-zero number of queued buffers) but
 								// not so big that audio takes too long to begin
@@ -110,9 +110,9 @@ typedef enum
 
 extern NSString * const ASStatusChangedNotification;
 extern NSString * const ASPresentAlertWithTitleNotification;
-#ifdef SHOUTCAST_METADATA
+//#if SHOUTCAST_METADATA
 extern NSString * const ASUpdateMetadataNotification;
-#endif
+//#endif
 
 @interface AudioStreamer : NSObject
 {
@@ -138,11 +138,11 @@ extern NSString * const ASUpdateMetadataNotification;
 	size_t packetsFilled;			// how many packets have been filled
 	bool inuse[kNumAQBufs];			// flags to indicate that a buffer is still in use
 	NSInteger buffersUsed;
-	NSDictionary *httpHeaders;
+//	NSDictionary *httpHeaders;
 	
 	AudioStreamerState state;
-	AudioStreamerStopReason stopReason;
-	AudioStreamerErrorCode errorCode;
+//	AudioStreamerStopReason stopReason;
+//	AudioStreamerErrorCode errorCode;
 	OSStatus err;
 	
 	bool discontinuous;			// flag to indicate middle of the stream
@@ -153,7 +153,7 @@ extern NSString * const ASUpdateMetadataNotification;
 	CFReadStreamRef stream;
 	NSNotificationCenter *notificationCenter;
 	
-	UInt32 bitRate;				// Bits per second in the file
+//	UInt32 bitRate;				// Bits per second in the file
 	NSInteger dataOffset;		// Offset of the first audio packet in the stream
 	NSInteger fileLength;		// Length of the file in bytes
 	NSInteger seekByteOffset;	// Seek offset within the file in bytes
@@ -175,9 +175,9 @@ extern NSString * const ASUpdateMetadataNotification;
     BOOL pausedByInterruption;
     
     UInt32 _numberOfChannels;	// Number of audio channels in the stream (1 = mono, 2 = stereo)
-    BOOL vbr; 			// indicates VBR (or not) stream
+//    BOOL vbr; 			// indicates VBR (or not) stream
 
-#ifdef SHOUTCAST_METADATA
+#if SHOUTCAST_METADATA
 	BOOL foundIcyStart;
 	BOOL foundIcyEnd;
 	BOOL parsedHeaders;
@@ -208,6 +208,8 @@ extern NSString * const ASUpdateMetadataNotification;
 @property (readonly) UInt32 numberOfChannels;
 @property (assign, getter=isMeteringEnabled) BOOL meteringEnabled;
 @property (readonly) BOOL vbr;
+
++ (NSString *)stringForErrorCode:(AudioStreamerErrorCode)anErrorCode;
 
 - (id)initWithURL:(NSURL *)aURL;
 //- (id)initWithURL:(NSURL *)aURL encryption:(EncryptionMethod)method crc32:(uLong)crc32;
